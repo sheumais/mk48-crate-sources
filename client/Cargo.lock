@@ -312,8 +312,8 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "cub"
-version = "0.1.12"
-source = "git+https://github.com/softbearstudios/cub?tag=0.1.12#4fd23d4e433581e1e90ffd900cf0c4b59657cb1a"
+version = "0.1.13"
+source = "git+https://github.com/softbearstudios/cub?tag=0.1.13#3634d39f757ccc495e57aaa9c31866f6692a0f98"
 dependencies = [
  "bitcode",
  "rand",
