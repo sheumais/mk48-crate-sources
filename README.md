@@ -15,12 +15,12 @@
 
 1. Install `rustup` ([see instructions here](https://rustup.rs/))
 2. Install `gmake` and `gcc` if they are not already installed.
-3. Install `trunk` (`cargo install --locked trunk --version 0.17.5`)
-4. Run `download_makefiles.sh`
-5. Install Rust Nightly and the WebAssembly target
+3. Run `download_makefiles.sh`
+4. Install trunk, Rust Nightly, and the WebAssembly target
 
 ```console
 make rustup
+make trunk
 ```
 
 6. Build client

@@ -82,12 +82,19 @@ impl EntityType {
     }
 
     /// iterates all loot types entity should drop. Takes score before death.
-    pub fn loot(self, score: u32, score_to_coins: bool) -> impl Iterator<Item = Self> + 'static {
+    ///
+    /// If `killer_score` is `None`, the boat died of natural causes and more loot
+    /// will be spawned as coins.
+    pub fn loot(
+        self,
+        score: u32,
+        killer_score: Option<u32>,
+    ) -> impl Iterator<Item = Self> + 'static {
         let data: &EntityData = self.data();
 
         debug_assert_eq!(data.kind, EntityKind::Boat);
 
-        let coin_amount = if score_to_coins {
+        let coin_amount = if killer_score.is_none() {
             natural_death_coins(score)
         } else {
             0
@@ -96,7 +103,13 @@ impl EntityType {
         let mut rng = thread_rng();
 
         // Loot is based on the length of the boat.
-        let loot_amount = (data.length * 0.25 * (rng.gen::<f32>() * 0.1 + 0.9)) as u32;
+        let mut loot_amount = (data.length * 0.25 * (rng.gen::<f32>() * 0.1 + 0.9)) as u32;
+
+        if let Some(killer_score) = killer_score
+            && killer_score.min(level_to_score(EntityData::MAX_BOAT_LEVEL)) / 8 > score
+        {
+            loot_amount /= 2;
+        }
 
         let mut loot_table = ArrayVec::<Self, 4>::new();
 
@@ -849,7 +862,7 @@ pub enum EntityType {
         label = "Osa",
         link = "https://en.wikipedia.org/wiki/Osa-class_missile_boat"
     )]
-    #[entity(Boat, Mtb, level = 3)]
+    #[entity(Boat, MissileBoat, level = 3)]
     #[size(length = 38.6, width = 7.64, draft = 1.73)]
     #[props(speed = 21.6067)]
     #[sensors(radar, visual)]
@@ -942,6 +955,48 @@ pub enum EntityType {
     #[exhaust(forward = 7.308, side = 4.531, symmetrical)]
     TerryFox,
     #[info(
+        label = "Tuo Chiang",
+        link = "https://en.wikipedia.org/wiki/Tuo_Chiang-class_corvette"
+    )]
+    #[entity(Boat, Corvette, level = 8)]
+    #[size(length = 60.4, width = 14, draft = 2.3)]
+    #[props(speed = 23.15, stealth = 0.75)]
+    #[sensors(radar, sonar, visual)]
+    #[armament(
+        Mark54,
+        forward = 0.25,
+        side = 0.25,
+        angle = 0,
+        turret = 0,
+        symmetrical,
+        external
+    )]
+    #[armament(Mark54, forward = 0.25, angle = 0, turret = 0, external)]
+    #[armament(
+        Mark54,
+        forward = 0.25,
+        side = 0.25,
+        angle = 0,
+        turret = 1,
+        symmetrical,
+        external
+    )]
+    #[armament(Mark54, forward = 0.25, angle = 0, turret = 1, external)]
+    #[armament(HsiungFengII, forward = -12.1665, side = -0.55, angle = -90, count = 2)]
+    #[armament(HsiungFengII, forward = -10.9934, side = -0.55, angle = -90, count = 2)]
+    #[armament(HsiungFengII, forward = -3.34456, side = 0.55, angle = 90, count = 2)]
+    #[armament(HsiungFengII, forward = -2.14797, side = 0.55, angle = 90, count = 2)]
+    #[armament(HsiungFengIII, forward = -6.34973, side = -0.55, angle = -90, count = 2)]
+    #[armament(HsiungFengIII, forward = -7.94323, side = 0.55, angle = 90, count = 2)]
+    #[armament(TC2N, forward = -9.06748, side = 0.55, angle = 90, count = 2)]
+    #[armament(TC2N, forward = -9.5074, side = 0.55, angle = 90, count = 2)]
+    #[armament(TC2N, forward = -4.81814, side = -0.55, angle = -90, count = 2)]
+    #[armament(TC2N, forward = -5.27436, side = -0.55, angle = -90, count = 2)]
+    #[turret(forward = -15.7351, side = 5.56064, medium, azimuth_br = 180, azimuth_bl = 120)]
+    #[turret(forward = -15.7351, side = -5.56064, medium, azimuth_bl = 180, azimuth_br = 120)]
+    #[turret(OtoMelara76Mm, forward = 15.1198, fast, azimuth_b = 55)]
+    TuoChiang,
+    #[info(
         label = "Town",
         link = "https://en.wikipedia.org/wiki/Town-class_cruiser_(1936)"
     )]
@@ -998,6 +1053,21 @@ pub enum EntityType {
     #[exhaust(forward = -7.34, side = 1.45, symmetrical)]
     #[exhaust(forward = -17.34, side = 1.45, symmetrical)]
     Type055,
+    #[info(
+        label = "Type 212A",
+        link = "https://en.wikipedia.org/wiki/Type_212A_submarine"
+    )]
+    #[entity(Boat, Submarine, level = 7)]
+    #[size(length = 56, width = 7.2734, draft = 6.4, mast = 7.97656)]
+    #[props(speed = 10.2889, depth = 250, stealth = 0.75)]
+    #[sensors(radar, sonar, visual)]
+    #[armament(Dm2A4, forward = 24.25, side = -0.35, count = 2)]
+    #[armament(Dm2A4, forward = 24.15, side = 0.65, count = 2)]
+    #[armament(Dm2A4, forward = 23.6, side = 1.65, count = 2)]
+    #[armament(Idas, forward = 27, side = -0.367675, count = 4, vertical, hidden)]
+    #[armament(Tau2000, forward = 17.4621, side = 2.7, angle = 90, symmetrical, hidden)]
+    #[armament(Tau2000, forward = -7.68335, side = 2.7, angle = 90, symmetrical, hidden)]
+    Type212A,
     #[info(
         label = "Type VII C",
         link = "https://en.wikipedia.org/wiki/Type_VII_submarine"
@@ -1455,6 +1525,15 @@ pub enum EntityType {
     #[size(length = 21.9, width = 5.1328)]
     #[props(range = 60)]
     Depositor,
+    #[info(
+        label = "DM2A4",
+        link = "https://en.wikipedia.org/wiki/DM2A4"
+    )]
+    #[entity(Weapon, Torpedo, level = 4)]
+    #[size(length = 6.6, width = 0.533)]
+    #[props(speed = 25.7223, range = 50000, damage = 1.25)]
+    #[sensors(sonar)]
+    Dm2A4,
     #[info(label = "ESSM", link = "https://en.wikipedia.org/wiki/RIM-162_ESSM")]
     #[entity(Weapon, Sam, level = 4)]
     #[size(length = 3.66, width = 0.4575)]
@@ -1482,6 +1561,30 @@ pub enum EntityType {
     #[props(speed = 950, range = 250000)]
     #[sensors(radar)]
     Hq9,
+    #[info(
+        label = "Hsiung Feng II",
+        link = "https://en.wikipedia.org/wiki/Hsiung_Feng_II"
+    )]
+    #[entity(Weapon, Missile, level = 4)]
+    #[size(length = 4.8, width = 1.0125)]
+    #[props(speed = 289.1667, range = 160000)]
+    #[sensors(radar)]
+    HsiungFengII,
+    #[info(
+        label = "Hsiung Feng III",
+        link = "https://en.wikipedia.org/wiki/Hsiung_Feng_III"
+    )]
+    #[entity(Weapon, Missile, level = 4)]
+    #[size(length = 6.1, width = 1.00078125)]
+    #[props(speed = 1200, range = 100000)]
+    #[sensors(radar)]
+    HsiungFengIII,
+    #[info(label = "IDAS", link = "https://en.wikipedia.org/wiki/IDAS_(missile)")]
+    #[entity(Weapon, Sam, level = 4)]
+    #[size(length = 2.8, width = 0.180)]
+    #[props(speed = 240, range = 40000, can_fire_underwater)]
+    #[sensors(radar)]
+    Idas,
     #[info(label = "Igla", link = "https://en.wikipedia.org/wiki/9K38_Igla")]
     #[entity(Weapon, Sam, level = 4)]
     #[size(length = 1.574, width = 0.1599)]
@@ -1633,6 +1736,17 @@ pub enum EntityType {
     #[props(speed = 20.577778, range = 16000)]
     #[sensors(sonar)]
     Set65,
+    #[info(label = "TAU 2000", link = "https://cmano-db.com/weapon/2451/")]
+    #[entity(Decoy, Sonar, level = 4)]
+    #[size(length = 1.250, width = 0.125)]
+    #[props(speed = 10, lifespan = 15)]
+    Tau2000,
+    #[info(label = "TC-2N", link = "https://en.wikipedia.org/wiki/Sky_Sword_II")]
+    #[entity(Weapon, Sam, level = 4)]
+    #[size(length = 3.694, width = 0.606)]
+    #[props(speed = 2058, range = 100000)]
+    #[sensors(radar)]
+    TC2N,
     #[info(
         label = "Tomahawk",
         link = "https://en.wikipedia.org/wiki/Tomahawk_(missile)"

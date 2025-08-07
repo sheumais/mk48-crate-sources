@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use kodiak_client::{
-    is_mobile, settings_prerequisites, BrowserStorages, SettingCategory, Settings, Translator,
+    is_mobile, settings_prerequisites, BrowserStorages, SettingCategory, Settings,
 };
 use strum_macros::{EnumIter, EnumMessage, EnumString, IntoStaticStr};
 

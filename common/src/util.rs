@@ -54,22 +54,26 @@ pub(crate) fn lose_n_levels(score: u32, n: u8) -> u32 {
 }
 
 /// respawn_score returns how much score is kept when a boat owned by a real player dies.
-pub fn respawn_score(score: u32, rank: Option<RankNumber>) -> u32 {
-    /*
-    let levels_to_lose = match score_to_level(score) {
-        1 => 0,
-        2..=3 => 1,
-        _ => 2,
-    };
-    lose_n_levels(score, levels_to_lose)
-     */
-
-    let ret = score.min(level_to_score(EntityData::MAX_BOAT_LEVEL));
-    if rank < Some(RankNumber::Rank6) {
-        ret * 10 / 25
-    } else {
-        ret * 15 / 25
-    }
+///
+/// If `killer_score` is `None`, the boat died of natural causes.
+pub fn respawn_score(
+    score: u32,
+    killer_score: Option<u32>,
+    loot_value: u32,
+    rank: Option<RankNumber>,
+) -> u32 {
+    // If `killer_score` is `None`, `loot_value` will be substantially higher.
+    let kill_score = killer_score
+        .map(|killer_score| kill_score(score, killer_score))
+        .unwrap_or(score / 10);
+    score
+        .saturating_sub(if rank >= Some(RankNumber::Rank6) {
+            kill_score * 13 / 10
+        } else {
+            kill_score * 15 / 10
+        })
+        .saturating_sub(loot_value)
+        .min(level_to_score(EntityData::MAX_BOAT_LEVEL - 2))
 }
 
 /// respawn_score returns how much score a boat gets from a kill.
@@ -78,8 +82,12 @@ pub fn kill_score(score: u32, killer_score: u32) -> u32 {
     let killer_score = killer_score.min(level_to_score(EntityData::MAX_BOAT_LEVEL));
     if killer_score / 16 >= score {
         0
+    } else if killer_score / 8 >= score {
+        raw / 4
     } else if killer_score / 4 >= score {
         raw / 2
+    } else if killer_score / 2 >= score {
+        raw * 2 / 3
     } else {
         raw
     }
@@ -92,7 +100,7 @@ pub fn ram_score(score: u32, killer_score: u32) -> u32 {
 
 /// natural_death_coins returns how many coins a boat should drop, assuming it died of natural causes.
 pub fn natural_death_coins(score: u32) -> u32 {
-    (score / 4 / 10).min(200)
+    (score / 4 / EntityData::COIN_VALUE).min(200)
 }
 
 /// returns a float in range [0, 1) based on n.
@@ -194,7 +202,7 @@ mod test {
                     .0
                     .loot(boats[died].1, natural)
                     .map(|t| match t {
-                        EntityType::Coin => 10,
+                        EntityType::Coin => EntityData::COIN_VALUE,
                         _ => 2,
                     })
                     .sum::<u32>();

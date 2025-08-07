@@ -371,7 +371,7 @@ impl World {
                         let is_tanker = boats[0].data().sub_kind == EntitySubKind::Tanker;
                         let score = match collectibles[0].entity_type {
                             EntityType::Barrel => 1 + is_tanker as u32,
-                            EntityType::Coin => 10,
+                            EntityType::Coin => EntityData::COIN_VALUE,
                             EntityType::Crate => 2,
                             EntityType::Scrap => 2,
                             _ => 0,

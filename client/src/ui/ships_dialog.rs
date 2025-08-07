@@ -120,6 +120,9 @@ fn entity_card(
                         if data.range != 0.0 {
                             <li>{format!("{}: {}m", translate!(t, "Range"), data.range as u32)}</li>
                         }
+                        if data.override_can_fire_underwater {
+                            <li>{translate!(t, "Can fire while submerged")}</li>
+                        }
                         if data.depth != Altitude::ZERO {
                             <li>{format!("{}: {}m", translate!(t, "Max Depth"), data.depth.to_meters() as u16)}</li>
                         }

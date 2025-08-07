@@ -10,9 +10,8 @@ use common::entity::EntityId;
 use common::entity::{EntityData, EntityKind, EntitySubKind};
 use common::ticks::Ticks;
 use kodiak_client::glam::Vec2;
-use kodiak_client::js_hooks::console_log;
 use kodiak_client::rand::{thread_rng, Rng};
-use kodiak_client::{map_ranges, Angle, AudioPlayer, ClientContext};
+use kodiak_client::{console_log, map_ranges, Angle, AudioPlayer, ClientContext};
 use std::collections::HashMap;
 
 /// A contact that may be locally controlled by simulated elsewhere (by the server).

@@ -124,20 +124,28 @@ impl Mutation {
             Self::HitBy(other_player, weapon_type, damage) => {
                 let e = &mut entities[index];
                 if e.damage(damage) {
-                    let killer_alias = {
+                    let (killer_alias, killer_score) = {
                         let (e_score, dead) = {
                             let player = e.borrow_player();
                             (player.score, player.player_id)
                         };
                         let mut other_player = other_player.borrow_player_mut();
+                        let killer_score = other_player.score;
                         tally_kill(other_player.player_id, dead);
                         other_player.score += kill_score(e_score, other_player.score);
                         let alias = other_player.alias;
                         drop(other_player);
-                        alias
+                        (alias, killer_score)
                     };
 
-                    world.remove(index, DeathReason::Weapon(killer_alias, weapon_type));
+                    world.remove(
+                        index,
+                        DeathReason::Weapon {
+                            killer_alias,
+                            weapon_type,
+                            killer_score,
+                        },
+                    );
                     return true;
                 }
             }
@@ -153,21 +161,28 @@ impl Mutation {
                         let player = entity.borrow_player();
                         (player.score, player.player_id)
                     };
-                    let killer_alias = {
+                    let (killer_alias, killer_score) = {
                         let mut other_player = other_player.borrow_player_mut();
+                        let killer_score = other_player.score;
                         tally_kill(other_player.player_id, dead);
                         other_player.score += ram_score(entity.borrow_player().score, e_score);
                         let alias = other_player.alias;
                         drop(other_player);
-                        alias
+                        (alias, killer_score)
                     };
 
                     world.remove(
                         index,
                         if ram {
-                            DeathReason::Ram(killer_alias)
+                            DeathReason::Ram {
+                                killer_alias,
+                                killer_score,
+                            }
                         } else {
-                            DeathReason::Boat(killer_alias)
+                            DeathReason::Boat {
+                                killer_alias,
+                                killer_score,
+                            }
                         },
                     );
                     return true;
@@ -288,18 +303,21 @@ impl Mutation {
         let data: &EntityData = entity_type.data();
 
         if data.kind == EntityKind::Boat {
-            // If killed by a player, that player will get the coins. If killed by land or by
-            // fleeing combat, score should be converted into coins to prevent destruction of score.
-            // DeathReason::Unknown means player left game.
-            let score_to_coins = matches!(
-                reason,
+            let killer_score = match reason {
+                DeathReason::Boat { killer_score, .. }
+                | DeathReason::Ram { killer_score, .. }
+                | DeathReason::Weapon { killer_score, .. } => Some(*killer_score),
                 DeathReason::Border
-                    | DeathReason::Terrain
-                    | DeathReason::Unknown
-                    | DeathReason::Obstacle(_)
-            );
+                | DeathReason::Terrain
+                | DeathReason::Unknown
+                | DeathReason::Obstacle(_) => None,
+                DeathReason::Landing(_) | DeathReason::Debug(_) => {
+                    debug_assert!(false, "invalid death reason for boat");
+                    None
+                }
+            };
 
-            Self::boat_died(world, index, score_to_coins);
+            Self::boat_died(world, index, killer_score);
         } else {
             if matches!(reason, DeathReason::Terrain) || data.sub_kind == EntitySubKind::DepthCharge
             {
@@ -334,19 +352,15 @@ impl Mutation {
     /// Called by on_world_remove when a boat dies.
     /// Applies the effect of a boat dying, such as a reduction in the corresponding player's
     /// score and the spawning of loot.
-    fn boat_died(world: &mut World, index: EntityIndex, score_to_coins: bool) {
-        let entity = &mut world.entities[index];
-        let mut player = entity.borrow_player_mut();
+    ///
+    /// If `killer_score` is `None`, the boat died of natural causes and more loot
+    /// will be spawned as coins.
+    fn boat_died(world: &mut World, index: EntityIndex, killer_score: Option<u32>) {
         let mut rng = thread_rng();
+        let entity = &world.entities[index];
+        let player = entity.borrow_player();
         let score = player.score;
-        player.score = if player.is_bot() {
-            // Make sure there are bots in the shallow area.
-            respawn_score(player.score, player.rank).min(level_to_score(rng.gen_range(1..=2)))
-        } else {
-            respawn_score(player.score, player.rank)
-        };
         drop(player);
-
         let data = entity.data();
         debug_assert_eq!(data.kind, EntityKind::Boat);
 
@@ -357,7 +371,8 @@ impl Mutation {
         let tangent = Vec2::new(-normal.y, normal.x);
         let altitude = entity.altitude;
 
-        for loot_type in entity.entity_type.loot(score, score_to_coins) {
+        let mut loot_value = 0;
+        for loot_type in entity.entity_type.loot(score, killer_score) {
             let mut loot_entity = Entity::new(loot_type, None);
 
             // Make loot roughly conform to rectangle of ship.
@@ -372,8 +387,24 @@ impl Mutation {
                 loot_entity.ticks += lifespan * (rng.gen::<f32>() * 0.25)
             }
 
-            world.spawn_here_or_nearby(loot_entity, data.radius * 0.15, None);
+            if world.spawn_here_or_nearby(loot_entity, data.radius * 0.15, None) {
+                loot_value += match loot_type {
+                    EntityType::Coin => EntityData::COIN_VALUE,
+                    _ => 2,
+                };
+            };
         }
+
+        let entity = &mut world.entities[index];
+        let mut player = entity.borrow_player_mut();
+        let respawn_score = respawn_score(player.score, killer_score, loot_value, player.rank);
+        player.score = if player.is_bot() {
+            // Make sure there are bots in the shallow area.
+            respawn_score.min(level_to_score(rng.gen_range(1..=2)))
+        } else {
+            respawn_score
+        };
+        drop(player);
     }
 
     /// Called by on_world_remove when a non-boat dies.

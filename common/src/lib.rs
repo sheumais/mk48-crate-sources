@@ -3,6 +3,7 @@
 
 #![feature(array_chunks)]
 #![feature(test)]
+#![feature(let_chains)]
 
 use kodiak_common::{DefaultedGameConstants, GameConstants};
 

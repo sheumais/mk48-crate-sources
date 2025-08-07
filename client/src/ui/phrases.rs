@@ -70,6 +70,9 @@ impl Mk48Phrases for Translator {
             (EntityKind::Boat, EntitySubKind::Mtb) => {
                 translate!(self, "motor-torpedo boat")
             }
+            (EntityKind::Boat, EntitySubKind::MissileBoat) => {
+                translate!(self, "missile boat")
+            }
             (EntityKind::Boat, EntitySubKind::Pirate) => {
                 translate!(self, "pirate")
             }
@@ -161,7 +164,10 @@ impl Mk48Phrases for Translator {
                 translate!(self, "Your boat can lay deadly magnetic mines")
             }
             (EntityKind::Boat, EntitySubKind::Mtb) => {
-                translate!(self, "Your boat has weapons to sink other boats!")
+                translate!(self, "Your boat has torpedoes to sink other boats!")
+            }
+            (EntityKind::Boat, EntitySubKind::MissileBoat) => {
+                translate!(self, "Your boat has missiles to sink other boats!")
             }
             (EntityKind::Boat, EntitySubKind::Ram) => {
                 translate!(self, "Your boat is designed to ram other boats!")
@@ -197,18 +203,23 @@ impl Mk48Phrases for Translator {
 
     fn death_reason(&self, death_reason: &DeathReason) -> String {
         match death_reason {
-            &DeathReason::Boat(alias) => self.death_reason_collision(alias),
+            &DeathReason::Boat { killer_alias, .. } => self.death_reason_collision(killer_alias),
             DeathReason::Border => {
                 translate!(self, "Crashed into the border!")
             }
             &DeathReason::Obstacle(entity_type) => self.death_reason_obstacle(entity_type),
-            &DeathReason::Ram(alias) => translate!(self, "Rammed by {alias}!"),
+            &DeathReason::Ram {
+                killer_alias: alias,
+                ..
+            } => translate!(self, "Rammed by {alias}!"),
             DeathReason::Terrain => {
                 translate!(self, "Crashed into the ground!")
             }
-            &DeathReason::Weapon(alias, entity_type) => {
-                self.death_reason_weapon(alias, entity_type)
-            }
+            &DeathReason::Weapon {
+                killer_alias,
+                weapon_type,
+                ..
+            } => self.death_reason_weapon(killer_alias, weapon_type),
             _ => {
                 debug_assert!(false, "unexpected {:?}", death_reason);
                 String::from("Died of unexplained causes.")

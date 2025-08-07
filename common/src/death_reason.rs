@@ -16,10 +16,20 @@ pub enum DeathReason {
     Terrain,
     Unknown, // Used by boats only for leaving game.
     // Only for boats.
-    Boat(PlayerAlias),
+    Boat {
+        killer_alias: PlayerAlias,
+        killer_score: u32,
+    },
     Obstacle(EntityType),
-    Ram(PlayerAlias),
-    Weapon(PlayerAlias, EntityType),
+    Ram {
+        killer_alias: PlayerAlias,
+        killer_score: u32,
+    },
+    Weapon {
+        killer_alias: PlayerAlias,
+        killer_score: u32,
+        weapon_type: EntityType,
+    },
     // Allows code to convey a reason for killing an entity that is not necessarily a player's boat.
     // In release mode, Unknown is used instead.
     //#[cfg(debug_assertions)]
@@ -35,15 +45,15 @@ impl DeathReason {
             Self::Border => false,
             Self::Landing(_) => false,
             Self::Terrain => false,
-            Self::Boat(_) => true,
+            Self::Boat { .. } => true,
             Self::Obstacle(entity_type) => {
                 // The assumption here is that all boats are controlled by players, and therefore
                 // should kill via Self::Boat not Self::Obstacle.
                 debug_assert!(entity_type.data().kind != EntityKind::Boat);
                 false
             }
-            Self::Ram(_) => true,
-            Self::Weapon(_, _) => true,
+            Self::Ram { .. } => true,
+            Self::Weapon { .. } => true,
             //#[cfg(debug_assertions)]
             Self::Debug(_) => false,
         }

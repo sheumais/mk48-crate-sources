@@ -18,6 +18,8 @@ pub struct EntityData {
     pub sub_kind: EntitySubKind,
     pub level: u8,
     pub limited: bool,
+    /// For entity (sub) kinds that normally cannot be fired underwater, override that.
+    pub override_can_fire_underwater: bool,
     pub npc: bool,
     pub lifespan: Ticks,
     pub reload: Ticks,
@@ -52,6 +54,8 @@ impl EntityData {
 
     /// Constant used for checking whether a depth charge should explode.
     pub const DEPTH_CHARGE_PROXIMITY: f32 = 30.0;
+
+    pub const COIN_VALUE: u32 = 10;
 
     /// radii range of throttle (0-100%) and limit of collecting things.
     pub fn radii(&self) -> Range<f32> {

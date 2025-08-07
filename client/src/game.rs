@@ -36,9 +36,9 @@ use kodiak_client::renderer::{
 use kodiak_client::renderer2d::{Camera2d, GraphicLayer, TextLayer};
 use kodiak_client::renderer3d::{ShadowLayer, ShadowParams, ShadowResult};
 use kodiak_client::{
-    gen_radius, js_hooks, lerp, map_ranges, translate, translation_prerequisites, ClientContext,
-    FatalError, FpsMonitor, GameClient, GameConstants, Joystick, Key, KeyboardEvent, MouseButton,
-    MouseEvent, MouseState, RankNumber, RateLimiter, TeamId, Translator,
+    console_error, gen_radius, lerp, map_ranges, translate, translation_prerequisites,
+    ClientContext, FatalError, FpsMonitor, GameClient, GameConstants, Joystick, Key, KeyboardEvent,
+    MouseButton, MouseEvent, MouseState, RankNumber, RateLimiter, TeamId, Translator,
 };
 use std::collections::HashMap;
 use std::f32::consts::PI;
@@ -493,7 +493,7 @@ impl GameClient for Mk48Game {
                         self.render_chain = render_chain;
                     }
                     Err(e) => {
-                        js_hooks::console_error!("{e}");
+                        console_error!("{e}");
                     }
                 }
             }

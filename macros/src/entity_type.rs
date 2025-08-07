@@ -237,6 +237,9 @@ pub(crate) fn derive_entity_type(input: TokenStream) -> TokenStream {
                                 "torpedo_resistance" => {
                                     set_f32(&mut entity.torpedo_resistance, nested);
                                 }
+                                "can_fire_underwater" => {
+                                    entity.override_can_fire_underwater = true;
+                                }
                                 _ => panic!("unexpected props path: {path}"),
                             }
                         }
@@ -888,6 +891,7 @@ struct Entity {
     exhausts: Vec<Exhaust>,
     limited: bool,
     npc: bool,
+    override_can_fire_underwater: bool,
     anti_aircraft: f32,
     radius: f32,
     inv_size: f32,
@@ -1044,6 +1048,7 @@ impl quote::ToTokens for Entity {
         let level = self.level.unwrap_or_default() as u8;
         let limited = self.limited;
         let npc = self.npc;
+        let override_can_fire_underwater = self.override_can_fire_underwater;
         let lifespan = (self.lifespan.unwrap_or_default() * 1000.0) as u32;
         let reload = (self.reload.unwrap_or_default() * 1000.0) as u32;
         let speed = (self.speed.unwrap_or_default() * 100.0) as u32;
@@ -1094,6 +1099,7 @@ impl quote::ToTokens for Entity {
                     level: #level,
                     limited: #limited,
                     npc: #npc,
+                    override_can_fire_underwater: #override_can_fire_underwater,
                     lifespan: Ticks::from_whole_millis(#lifespan),
                     reload: Ticks::from_whole_millis(#reload),
                     speed: Velocity::from_whole_cmps(#speed),

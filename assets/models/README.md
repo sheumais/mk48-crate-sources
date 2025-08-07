@@ -1,10 +1,14 @@
-Models are based on real military designs. We thank the following illustrators, photographers, and resources for making reference images freely available.
+Models are based on real military designs. We thank the following illustrators, photographers,
+community members, and organizations for making references and models freely available.
 
 # CC BY SA 4.0
 * [Mark 7](https://en.m.wikipedia.org/wiki/File:USS_Iowa_gun_load.jpg) by JamesMadison
 * [Harpoon](https://en.m.wikipedia.org/wiki/File:AGM-84A_HARPOON.png) by Tdhla1
 * [Harbin](https://en.m.wikipedia.org/wiki/File:Eurocopter_MH-65_Dolphin_orthographical_image.svg) by Fox 52
 * [ASROC](https://commons.wikimedia.org/wiki/File:Inert_ASROC_missile_on_JS_Shimakaze(DDG-172\)_left_side_view_at_JMSDF_Hanshin_base_December_10,_2017.jpg) by Hunini
+
+# CC BY 4.0
+- Hsiung Feng II model by DUCK!!!
 
 # CC BY SA 3.0
 * [Clemenceau](https://en.m.wikipedia.org/wiki/File:FS_Clem_plan1.jpg) by NetMarine
@@ -20,6 +24,7 @@ Models are based on real military designs. We thank the following illustrators, 
 * [LRLAP](https://www.deviantart.com/bagera3005/art/Long-Range-Land-Attack-Projectile-354280342) by bagera3005
 * [Barak-8](https://commons.wikimedia.org/wiki/File:Salon_du_Bourget_20090619_077.jpg) by Georges Seguin
 * [RBS15](https://commons.wikimedia.org/wiki/File:RBS15_sketch.svg) by Allocer
+* [TC-2](https://en.wikipedia.org/wiki/Sky_Sword_II#/media/File:TC-2_Sky_Sword_II.jpg) by RudolphChen
 
 # CC0
 * [Bismarck](https://commons.wikimedia.org/wiki/File:Battleship_Bismark.svg) by Carlos Harner

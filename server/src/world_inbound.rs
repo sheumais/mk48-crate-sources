@@ -330,6 +330,7 @@ impl CommandTrait for Fire {
 
             // Can't fire if boat is a submerged former submarine.
             if entity.altitude.is_submerged()
+                && !armament_entity_data.override_can_fire_underwater
                 && (data.sub_kind != EntitySubKind::Submarine
                     || matches!(armament_entity_data.kind, EntityKind::Aircraft)
                     || matches!(
@@ -445,7 +446,7 @@ impl CommandTrait for Pay {
             let target =
                 clamp_to_range(entity.transform.position, target, max_range, cutoff_range)?;
 
-            let pay = 10; // Value of coin.
+            let pay = EntityData::COIN_VALUE; // Value of coin.
             let withdraw = pay * 2; // Payment has 50% efficiency.
 
             if player.score < level_to_score(entity.data().level) + withdraw {
